@@ -1,4 +1,5 @@
 
+import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -276,7 +277,43 @@ public class ot extends javax.swing.JFrame {
 
     private void midKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_midKeyPressed
         // TODO add your handling code here:
-        
+        int keypad = evt.getKeyCode();
+        if(keypad == KeyEvent.VK_ENTER){
+            if(mid.getText().isEmpty()){
+                JOptionPane.showMessageDialog(null, "Enter Member ID");
+            }
+            else{
+                Connection conn;
+                String url = "jdbc:sqlite:D:/Java Codes (Practices)/7.Salary Processing System/PayRollSystem/Database/database.db";
+                
+                try{
+                
+                    conn = DriverManager.getConnection(url);
+                    
+                    String sql = "SELECT Name FROM PersonalDetails WHERE MID = ?";
+                    PreparedStatement pst = conn.prepareStatement(sql);
+                    pst.setString(1,mid.getText());
+                    ResultSet rs = pst.executeQuery();
+                    String item_name = null;
+                    while(rs.next()){
+                        item_name = rs.getString(1);
+                    }
+                     
+                    if(item_name.isEmpty()){
+                        JOptionPane.showMessageDialog(null, "Invalid Member ID");
+                    }else{
+                        month.requestFocus();
+                    }
+              
+                }catch(SQLException e){
+                    System.out.println("Error - "+ e);
+                }catch(NullPointerException e1){
+                    JOptionPane.showMessageDialog(null, "Invalid Entry");
+                }
+            }
+        }else if(keypad == KeyEvent.VK_ESCAPE){
+            dispose();
+        }
     }//GEN-LAST:event_midKeyPressed
 
     private void othoursKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_othoursKeyPressed
