@@ -76,7 +76,7 @@ public class ot extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         month = new javax.swing.JComboBox<>();
         jLabel5 = new javax.swing.JLabel();
-        month1 = new javax.swing.JComboBox<>();
+        year = new javax.swing.JComboBox<>();
         jLabel6 = new javax.swing.JLabel();
         othours = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
@@ -141,12 +141,22 @@ public class ot extends javax.swing.JFrame {
 
         month.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
         month.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-Select Month-", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" }));
+        month.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                monthKeyPressed(evt);
+            }
+        });
 
         jLabel5.setFont(new java.awt.Font("Trebuchet MS", 0, 18)); // NOI18N
         jLabel5.setText("Year");
 
-        month1.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
-        month1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-Select Year-", "2022", "2023", "2024", "2025", "2026", "2027", "2028", "2029", "2030" }));
+        year.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
+        year.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-Select Year-", "2022", "2023", "2024", "2025", "2026", "2027", "2028", "2029", "2030" }));
+        year.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                yearKeyPressed(evt);
+            }
+        });
 
         jLabel6.setFont(new java.awt.Font("Trebuchet MS", 0, 18)); // NOI18N
         jLabel6.setText("OT Hours");
@@ -165,11 +175,6 @@ public class ot extends javax.swing.JFrame {
         otpayment.setEditable(false);
         otpayment.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
         otpayment.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
-        otpayment.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                otpaymentKeyPressed(evt);
-            }
-        });
 
         cancel.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
         cancel.setText("Cancel");
@@ -217,7 +222,7 @@ public class ot extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(month1, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(year, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -253,7 +258,7 @@ public class ot extends javax.swing.JFrame {
                             .addComponent(month, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(month1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(year, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -318,11 +323,18 @@ public class ot extends javax.swing.JFrame {
 
     private void othoursKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_othoursKeyPressed
         // TODO add your handling code here:
+        int keypad = evt.getKeyCode();
+        if(keypad == KeyEvent.VK_ENTER){
+            if(othours.getText().isEmpty()){
+                JOptionPane.showMessageDialog(null, "Enter OT hours");
+            }else{
+                int ho = Integer.parseInt(othours.getText());
+                float amount = (float) (ho * 100.00);
+                otpayment.setText(String.valueOf(amount));
+                save.requestFocus();
+            }
+        }
     }//GEN-LAST:event_othoursKeyPressed
-
-    private void otpaymentKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_otpaymentKeyPressed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_otpaymentKeyPressed
 
     private void cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelActionPerformed
         // TODO add your handling code here:
@@ -331,6 +343,39 @@ public class ot extends javax.swing.JFrame {
 
     private void saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveActionPerformed
         // TODO add your handling code here:
+        Connection conn;
+        try{
+            String url = "jdbc:sqlite:D:/Java Codes (Practices)/7.Salary Processing System/PayRollSystem/Database/database.db";
+            conn = DriverManager.getConnection(url);
+            
+            String sql = "INSERT INTO ot VALUES (?,?,?,?,?)";
+            PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setString(1, mid.getText());
+            pst.setString(2, month.getSelectedItem().toString());
+            pst.setString(3, year.getSelectedItem().toString());
+            pst.setString(4, othours.getText());
+            
+            int ho = Integer.parseInt(othours.getText());
+            float amount = (float) (ho * 100.00);
+            
+            pst.setString(5, String.valueOf(amount));
+            pst.execute();
+            
+            JOptionPane.showMessageDialog(null, "Data Saved Successfully");
+            
+            conn.close();
+            dispose();
+            
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    new ot().setVisible(true);
+                }
+            });
+            
+            
+        }catch(SQLException e){
+            System.out.println(e);
+        }
     }//GEN-LAST:event_saveActionPerformed
 
     private void resetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetActionPerformed
@@ -342,6 +387,34 @@ public class ot extends javax.swing.JFrame {
             }
         });
     }//GEN-LAST:event_resetActionPerformed
+
+    private void monthKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_monthKeyPressed
+        // TODO add your handling code here:
+        int keypad = evt.getKeyCode();
+        if(keypad == KeyEvent.VK_ENTER ){
+            if(month.getSelectedIndex() == 0){
+                JOptionPane.showMessageDialog(null, "Select Month");
+            }else{
+                year.requestFocus();
+            }
+        }else if(keypad == KeyEvent.VK_ESCAPE){
+            dispose();
+        }
+    }//GEN-LAST:event_monthKeyPressed
+
+    private void yearKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_yearKeyPressed
+        // TODO add your handling code here:
+        int keypad = evt.getKeyCode();
+        if(keypad == KeyEvent.VK_ENTER){
+            if(year.getSelectedIndex() == 0){
+                JOptionPane.showMessageDialog(null, "Select Year");
+            }else{
+                othours.requestFocus();
+            }
+        }else if(keypad == KeyEvent.VK_ESCAPE){
+            dispose();
+        }
+    }//GEN-LAST:event_yearKeyPressed
 
     /**
      * @param args the command line arguments
@@ -390,10 +463,10 @@ public class ot extends javax.swing.JFrame {
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField mid;
     private javax.swing.JComboBox<String> month;
-    private javax.swing.JComboBox<String> month1;
     private javax.swing.JTextField othours;
     private javax.swing.JTextField otpayment;
     private javax.swing.JButton reset;
     private javax.swing.JButton save;
+    private javax.swing.JComboBox<String> year;
     // End of variables declaration//GEN-END:variables
 }
