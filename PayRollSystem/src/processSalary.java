@@ -345,7 +345,7 @@ public class processSalary extends javax.swing.JFrame {
             }
             ot.setText(ot_p);
             
-            String sql3 = "SELECT MID,loanNo,loanAmount FROM loanDetails WHERE MID = ?";
+            String sql3 = "SELECT MID,loanNo,monthlyPaymnet FROM loanDetails WHERE MID = ?";
             PreparedStatement pst3 = conn.prepareStatement(sql3);
             pst3.setString(1, mid.getText());
             ResultSet rs3 = pst3.executeQuery();
@@ -372,11 +372,11 @@ public class processSalary extends javax.swing.JFrame {
             
             loan.setText(String.valueOf(totalLoan));
             
-            float month_Sal = + Float.parseFloat(b_salary)+Float.parseFloat(bike_al)
+            float month_Sal = Float.parseFloat(b_salary)+Float.parseFloat(bike_al)
                     +Float.parseFloat(lunch_al)+Float.parseFloat(bonus_s)+Float.parseFloat(ot_p)-totalLoan;
             
             monthlysalary.setText(String.valueOf(month_Sal));
-       
+            save.requestFocus();
             conn.close();
         }catch(SQLException e){
             System.out.println(e);
@@ -454,8 +454,7 @@ public class processSalary extends javax.swing.JFrame {
         try{
             String url = "jdbc:sqlite:D:/Java Codes (Practices)/7.Salary Processing System/PayRollSystem/Database/database.db";
             conn = DriverManager.getConnection(url);
-            
-            String sql = "INSERT INTO monthlySalary VALUES ?,?,?,?";
+            String sql = "INSERT INTO monthlySalary VALUES (?,?,?,?)";
             PreparedStatement pst = conn.prepareStatement(sql);
             pst.setString(1,mid.getText());
             pst.setString(2, month.getSelectedItem().toString());
@@ -463,7 +462,44 @@ public class processSalary extends javax.swing.JFrame {
             pst.setString(4, monthlysalary.getText());
             pst.execute();
             
-            String sql2 = "";
+            String sql3 = "SELECT MID,loanNo FROM loanDetails WHERE MID = ?";
+            PreparedStatement pst3 = conn.prepareStatement(sql3);
+            pst3.setString(1, mid.getText());
+            ResultSet rs3 = pst3.executeQuery();
+            String loanNumber = null , m_id = null;
+            while(rs3.next()){
+                m_id = rs3.getString(1);
+                loanNumber = rs3.getString(2);
+                if(m_id == null ? mid.getText() == null : m_id.equals(mid.getText())){
+                    String sql4 = "SELECT RemainingMonths FROM LoanRemains WHERE LoanNo = ?";
+                    PreparedStatement pst4 = conn.prepareStatement(sql4);
+                    pst4.setString(1, loanNumber);
+                    ResultSet rs4 = pst4.executeQuery();
+                    String remainingM = null;
+                    while(rs4.next()){
+                        remainingM = rs4.getString(1);
+                        if(Float.parseFloat(remainingM)>0){
+                            float mon = (float) (Float.parseFloat(remainingM) - 1.0);
+                            String sql5 = "UPDATE LoanRemains SET RemainingMonths = ? WHERE LoanNo = ?";
+                            PreparedStatement pst5 = conn.prepareStatement(sql5);
+                            pst5.setString(1,String.valueOf(mon));
+                            pst5.setString(2,loanNumber);
+                            pst5.execute();
+                        }
+                    }
+                }
+            }
+            JOptionPane.showMessageDialog(null, "Salary Processed Successfully!");
+            dispose();
+            conn.close();
+            
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    new processSalary().setVisible(true);
+                }
+            });
+            
+            
         }catch(SQLException e){
             System.out.println(e);
         }
